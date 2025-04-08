@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import os
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pyotp
 from app.schemas.login import LoginRequest
 
@@ -79,17 +79,6 @@ async def register_user(
 #            LOGIN                #
 ###################################
 
-# We'll need a schema for login requests.
-# Ensure you have the following in app/schemas/login.py:
-# 
-# from pydantic import BaseModel, EmailStr
-# from typing import Optional
-#
-# class LoginRequest(BaseModel):
-#     email: EmailStr
-#     password: str
-#     totp_code: Optional[str] = None
-
 @router.post("/login", response_model=dict)
 async def login_user(login_req: LoginRequest, db: AsyncSession = Depends(get_db)):
     # Now we no longer need a local import inside the function
@@ -98,7 +87,7 @@ async def login_user(login_req: LoginRequest, db: AsyncSession = Depends(get_db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     
     if user.lock_until and user.lock_until > now:
         raise HTTPException(
@@ -120,7 +109,7 @@ async def login_user(login_req: LoginRequest, db: AsyncSession = Depends(get_db)
             await db.commit()
         totp = pyotp.TOTP(user.totp_secret)
         if not login_req.totp_code:
-            qr_url = totp.provisioning_uri(name=user.email, issuer_name="YourAppName")
+            qr_url = totp.provisioning_uri(name=user.email, issuer_name="InsightPACS")
             return {
                 "totp_setup": True,
                 "qr_code_url": qr_url,
