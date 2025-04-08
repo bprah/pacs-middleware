@@ -8,15 +8,23 @@ class RegistrationRequest(BaseModel):
     password: str
     first_name: str
     last_name: str
+    mobile_phone: Optional[str] = None
+    organisation: Optional[str] = None
+    # For file uploads, we won’t include them here since files come via UploadFile
 
 class PendingRegistrationRead(BaseModel):
     id: int
     email: EmailStr
     first_name: str
     last_name: str
+    mobile_phone: Optional[str] = None
+    organisation: Optional[str] = None
+    research_id_doc: Optional[str] = None
+    ethics_approval_doc: Optional[str] = None
+    confidentiality_agreement_doc: Optional[str] = None
     status: str
     submitted_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated for Pydantic v2 (was orm_mode)
 
