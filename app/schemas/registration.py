@@ -2,6 +2,9 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel
+from typing import List
+
 
 class RegistrationRequest(BaseModel):
     email: EmailStr
@@ -26,5 +29,8 @@ class PendingRegistrationRead(BaseModel):
     submitted_at: datetime
 
     class Config:
-        from_attributes = True  # Updated for Pydantic v2 (was orm_mode)
+        from_attributes = True 
 
+
+class RegistrationApprove(BaseModel):
+    role_ids: List[int]

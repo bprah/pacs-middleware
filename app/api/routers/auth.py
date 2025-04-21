@@ -81,7 +81,7 @@ async def register_user(
 
 @router.post("/login", response_model=dict)
 async def login_user(login_req: LoginRequest, db: AsyncSession = Depends(get_db)):
-    # Now we no longer need a local import inside the function
+
     # Retrieve user by email
     user = await crud_user.get_user_by_email(db, login_req.email)
     if not user:
