@@ -15,3 +15,25 @@ class UserRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserMe(BaseModel):
+    email: EmailStr
+    first_name: str
+    last_name: str
+    mobile_phone: Optional[str]
+    organisation: Optional[str]
+    roles: List[str]
+    is_totp_verified: bool
+
+    class Config:
+        from_attributes = True
+        
+class UserSummary(BaseModel):
+    id:          int
+    first_name:  str
+    last_name:   str
+    email:       EmailStr
+
+    class Config:
+        from_attributes = True

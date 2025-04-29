@@ -8,6 +8,10 @@ from datetime import datetime, timedelta, timezone
 import pyotp
 from app.schemas.login import LoginRequest
 
+from app.schemas.user import UserMe
+from app.db.crud.crud_user import get_user_by_id
+from app.api.dependencies import get_db, get_current_user_data
+
 from app.db.crud import crud_user, crud_pending_registration
 from app.api.dependencies import get_db
 from app.core import security
@@ -141,3 +145,27 @@ async def login_user(login_req: LoginRequest, db: AsyncSession = Depends(get_db)
     }
     access_token = security.create_access_token(data=token_data)
     return {"access_token": access_token, "token_type": "bearer"}
+
+###################################
+#  ME - Current User Details      #
+###################################
+@router.get("/me", response_model=UserMe)
+async def read_current_user(
+    token_data: dict = Depends(get_current_user_data),
+    db: AsyncSession = Depends(get_db),
+):
+    user_id = token_data.get("user_id")
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Build and return only the safe fields
+    return UserMe.model_validate({
+        "email":           user.email,
+        "first_name":      user.first_name,
+        "last_name":       user.last_name,
+        "mobile_phone":    user.mobile_phone,
+        "organisation":    user.organisation,
+        "roles":           [r.name for r in user.roles],
+        "is_totp_verified": user.is_totp_verified,
+    }).model_dump()

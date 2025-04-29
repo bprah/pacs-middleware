@@ -41,3 +41,16 @@ async def create_user(
     await db.commit()
     await db.refresh(user)
     return user
+
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+    result = await db.execute(select(User).where(User.id == user_id))
+    return result.scalars().first()
+
+async def get_all_users(db: AsyncSession) -> List[User]:
+    """
+    Return all active users, for things like project member pickers.
+    """
+    result = await db.execute(
+        select(User).where(User.is_active == True)
+    )
+    return result.scalars().all()
