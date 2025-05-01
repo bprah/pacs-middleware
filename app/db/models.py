@@ -1,5 +1,5 @@
 # app/db/models.py
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Boolean, Enum
+from sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Boolean, Enum, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
@@ -166,3 +166,59 @@ class Project(Base):
 
     created_at  = Column(DateTime(timezone=True), server_default=func.now())
     updated_at  = Column(DateTime(timezone=True), onupdate=func.now())
+
+# ─── File‐type and Related Enums ────────────────────────────────────────────────
+
+class ModalityEnum(str, enum.Enum):
+    CT  = "CT"
+    MR  = "MRI"
+    US  = "US"
+    CR  = "CR"
+    DX  = "DX"
+    NM  = "NM"
+    PET = "PET"
+    OT  = "OT"
+
+class AccessLevelEnum(str, enum.Enum):
+    private  = "private"
+    project  = "project"
+    public   = "public"
+    research = "research"
+
+class BodyAreaEnum(str, enum.Enum):
+    head       = "head"
+    neck       = "neck"
+    chest      = "chest"
+    abdomen    = "abdomen"
+    pelvis     = "pelvis"
+    spine      = "spine"
+    upper_ext  = "upper_ext"
+    lower_ext  = "lower_ext"
+    whole_body = "whole_body"
+
+class FileTypeEnum(str, enum.Enum):
+    DICOM = "dicom"
+    PDF   = "pdf"
+    JPG   = "jpg"
+    # add more as needed…
+
+# ─── DataFile Model ────────────────────────────────────────────────────────────
+
+class DataFile(Base):
+    __tablename__ = "data_files"
+
+    id                = Column(Integer, primary_key=True, index=True)
+    data_name         = Column(String, nullable=False)
+    project_id        = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    patient_id        = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    modality          = Column(Enum(ModalityEnum),    nullable=False)
+    access_level      = Column(Enum(AccessLevelEnum), nullable=False)
+    body_area         = Column(Enum(BodyAreaEnum),    nullable=True)
+    related_report_id = Column(Integer, nullable=True)
+    comments          = Column(Text,    nullable=True)
+
+    file_type         = Column(Enum(FileTypeEnum), nullable=False, default=FileTypeEnum.DICOM)
+    orthanc_id        = Column(String, unique=True, nullable=True)
+    storage_path      = Column(String, nullable=True)
+
+    uploaded_at       = Column(DateTime(timezone=True), server_default=func.now())

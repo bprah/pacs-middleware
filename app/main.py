@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routers import auth, admin, patients, projects
+from app.api.routers import auth, admin, patients, projects,datafiles
 from app.db.database import async_session
 from app.db.models import Role
 from app.db.crud.crud_role import get_role_by_name
@@ -22,6 +22,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(patients.router)
 app.include_router(projects.router)
+app.include_router(datafiles.router)
 
 # Startup event: seed default roles if they don't exist
 @app.on_event("startup")
